@@ -1,13 +1,12 @@
 from enum import Enum
 
-from firstrade.account import FTSession
-from firstrade import urls
-
 from bs4 import BeautifulSoup
+
+from firstrade import urls
+from firstrade.account import FTSession
 
 
 class PriceType(str, Enum):
-
     """
     This is an :class: 'enum.Enum'
     that contains the valid price types for an order.
@@ -22,7 +21,6 @@ class PriceType(str, Enum):
 
 
 class Duration(str, Enum):
-
     """
     This is an :class:'~enum.Enum'
     that contains the valid durations for an order.
@@ -36,7 +34,6 @@ class Duration(str, Enum):
 
 
 class OrderType(str, Enum):
-
     """
     This is an :class:'~enum.Enum'
     that contains the valid order types for an order.
@@ -49,25 +46,25 @@ class OrderType(str, Enum):
 
 
 class Order:
-
     """
     This class contains information about an order.
     It also contains a method to place an order.
     """
+
     def __init__(self, ft_session: FTSession):
         self.ft_session = ft_session
         self.order_confirmation = {}
 
     def place_order(
-        self,
-        account,
-        symbol,
-        price_type: PriceType,
-        order_type: OrderType,
-        quantity,
-        duration: Duration,
-        price=0.00,
-        dry_run=True,
+            self,
+            account,
+            symbol,
+            price_type: PriceType,
+            order_type: OrderType,
+            quantity,
+            duration: Duration,
+            price=0.00,
+            dry_run=True,
     ):
         """
         Builds and places an order.
@@ -162,3 +159,64 @@ class Order:
             order_confirmation["actiondata"] = action_data
         order_confirmation["errcode"] = order_data.find("errcode").text.strip()
         self.order_confirmation = order_confirmation
+
+    def cancel_order(self, account, order_id):
+        """
+        Cancels an order.
+        Args:
+            account (str): Account number of the account to cancel the order in.
+            order_id (str): Order ID of the order to cancel.
+        """
+        data = {
+            "accountId": account,
+            "clordid": order_id
+        }
+
+        self.ft_session.post(
+            url=urls.cxlorder(), headers=urls.session_headers(), data=data
+        )
+
+        print(f"Order {order_id} has been cancelled.")
+
+    def get_orders_status(self, account):
+        """Gets the status of all orders for a given account.
+
+        Args:
+            account (str): Account number of the account you want to get orders for.
+
+        Returns:
+            self.orders_status {dict}:
+            Dict of held positions with the pos. ticker as the key.
+        """
+        data = {
+            "page": "all",
+            "accountId": str(account),
+        }
+        statuses_soup = BeautifulSoup(
+            self.ft_session.post(
+                url=urls.get_xml(),
+                headers=urls.session_headers(),
+                data=data,
+                cookies=self.ft_session.cookies,
+            ).text,
+            "lxml",
+        )
+
+        order_status_list = statuses_soup.find_all('orderstatus')
+
+        statuses = []
+        for order_status in order_status_list:
+            # 找到 <status> 元素
+            status_element = order_status.find('status')
+
+            # 找到 <input> 元素列表
+            input_elements = status_element.find_all('input')
+
+            # 将每个 <input> 的 name 和 value 存储在字典中
+            input_dict = {}
+            for input_element in input_elements:
+                input_dict[input_element['name']] = input_element['value']
+
+            statuses.append(input_dict)
+
+        return statuses

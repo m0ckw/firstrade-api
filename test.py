@@ -1,7 +1,7 @@
 from firstrade import account, order, symbols
 
 # Create a session
-ft_ss = account.FTSession(username="", password="", pin="")
+ft_ss = account.FTSession(username="mackwang", password="ztLf$hX8FXtULCN", pin="1986")
 
 # Get account data
 ft_accounts = account.FTAccountData(ft_ss)
@@ -31,37 +31,47 @@ print(f"Volume: {quote.volume}")
 print(f"Company Name: {quote.company_name}")
 
 # Get positions and print them out for an account.
-positions = ft_accounts.get_positions(account=ft_accounts.account_numbers[1])
+positions = ft_accounts.get_positions(account=ft_accounts.account_numbers[0])
 for key in ft_accounts.securities_held:
     print(
         f"Quantity {ft_accounts.securities_held[key]['quantity']} of security {key} held in account {ft_accounts.account_numbers[1]}"
     )
 
+
+# # Get order history and print it out for an account.
+
+# order_history = ft_accounts.get_orders_status(account=ft_accounts.account_numbers[0])
+# print(order_history)
+
 # Create an order object.
 ft_order = order.Order(ft_ss)
 
-# Place order and print out order confirmation data.
-ft_order.place_order(
-    ft_accounts.account_numbers[0],
-    symbol="INTC",
-    price_type=order.PriceType.MARKET,
-    order_type=order.OrderType.BUY,
-    quantity=1,
-    duration=order.Duration.DAY,
-    dry_run=True,
-)
+status = ft_order.get_orders_status(account=ft_accounts.account_numbers[0])
+print(status)
 
-# Print Order data Dict
-print(ft_order.order_confirmation)
-
-# Check if order was successful
-if ft_order.order_confirmation["success"] == "Yes":
-    print("Order placed successfully.")
-    # Print Order ID
-    print(f"Order ID: {ft_order.order_confirmation['orderid']}.")
-else:
-    print("Failed to place order.")
-    # Print errormessage
-    print(ft_order.order_confirmation["actiondata"])
+# # Place order and print out order confirmation data.
+# ft_order.place_order(
+#     ft_accounts.account_numbers[0],
+#     symbol="TSLA",
+#     price_type=order.PriceType.LIMIT,
+#     order_type=order.OrderType.BUY,
+#     price=160.00,
+#     quantity=1,
+#     duration=order.Duration.DAY,
+#     dry_run=False,
+# )
+#
+# # Print Order data Dict
+# print(ft_order.order_confirmation)
+#
+# # Check if order was successful
+# if ft_order.order_confirmation["success"] == "Yes":
+#     print("Order placed successfully.")
+#     # Print Order ID
+#     print(f"Order ID: {ft_order.order_confirmation['orderid']}.")
+# else:
+#     print("Failed to place order.")
+#     # Print errormessage
+#     print(ft_order.order_confirmation["actiondata"])
 # Delete cookies
-ft_ss.delete_cookies()
+# ft_ss.delete_cookies()

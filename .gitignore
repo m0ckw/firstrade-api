@@ -51,6 +51,7 @@ coverage.xml
 *.cover
 *.py,cover
 .hypothesis/
+.idea
 .pytest_cache/
 
 # Translations
@@ -133,3 +134,4 @@ dmypy.json
 user_data_dir
 auth.json
 *.png
+1.py
